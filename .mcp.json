@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "advocu": {
+      "type": "stdio",
+      "command": "/home/falcon/advocu-mcp-server/venv/bin/python",
+      "args": ["-m", "src.server"],
+      "cwd": "/home/falcon/advocu-mcp-server",
+      "env": {
+        "PYTHONPATH": "/home/falcon/advocu-mcp-server"
+      }
+    }
+  }
+}
