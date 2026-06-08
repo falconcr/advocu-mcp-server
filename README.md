@@ -302,7 +302,6 @@ MIT License - see LICENSE file for details
 ## Acknowledgments
 
 - Built with [FastMCP](https://gofastmcp.com/) by Prefect
-- Inspired by [carlosazaustre/advocu-mcp-server](https://github.com/carlosazaustre/advocu-mcp-server)
 - Powered by [Advocu API](https://www.advocu.com/)
 
 ## Roadmap
