@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "advocu": {
+      "command": "python",
+      "args": ["-m", "src.server"],
+      "cwd": "/REPLACE/WITH/ABSOLUTE/PATH/TO/advocu-mcp-server",
+      "env": {
+        "PYTHONPATH": "/REPLACE/WITH/ABSOLUTE/PATH/TO/advocu-mcp-server"
+      }
+    }
+  }
+}

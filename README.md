@@ -190,6 +190,198 @@ Claude will automatically use the appropriate MCP tools to submit your activitie
 
 - `list_recent_activities` - List recent activities
 
+## Usage Examples
+
+### Docker Captains Examples
+
+#### Example 1: Submit a Video Tutorial
+
+**You say:**
+> "I just published a video tutorial on YouTube about Docker Multi-Stage Builds. It was posted on June 1st, 2026, and already has 2500 views, 150 likes, and 45 comments. Here's the link: https://youtube.com/watch?v=example"
+
+**Claude will:**
+- Use `submit_docker_resource` tool
+- Extract: title, date, URL, metrics (views, likes, comments)
+- Content type: "Video"
+- Create draft in Advocu
+
+**Result:**
+```
+✅ Resource activity DRAFT created successfully
+Draft ID: abc123...
+⚠️ Go to https://hub.docker.com/ to review and click 'Submit' to publish
+```
+
+#### Example 2: Submit a Blog Post
+
+**You say:**
+> "I wrote a blog post titled 'Docker Security Best Practices 2026' yesterday. It's published at https://myblog.com/docker-security and currently has 5000 views and 200 shares"
+
+**Claude creates:**
+- Title: "Docker Security Best Practices 2026"
+- Content type: "Blog post"
+- Metrics: 5000 views, 200 shares
+- Date: 2026-06-07 (yesterday)
+
+#### Example 3: Submit a Conference Talk
+
+**You say:**
+> "I gave a presentation at DockerCon 2026 titled 'The Future of Container Orchestration' on June 5th. It was in-person, lasted 45 minutes, and had approximately 500 attendees. Slides are at https://slides.com/my-talk"
+
+**Claude creates:**
+- Tool: `submit_docker_public_speaking`
+- Format: "In-person"
+- Duration: 45 minutes
+- Attendees: 500
+
+#### Example 4: Submit a Workshop
+
+**You say:**
+> "I organized a Docker workshop for beginners last week on June 3rd. It was a virtual event that lasted 4 hours (2-4 hours duration) with 30 participants. We covered Docker basics and best practices"
+
+**Claude creates:**
+- Tool: `submit_docker_event`
+- Event type: "Workshop"
+- Format: "Virtual"
+- Duration: "2-4 hours"
+- Attendees: 30
+- Tags: Docker, workshop, beginners
+
+#### Example 5: Submit Social Media Amplification
+
+**You say:**
+> "I shared Docker's new release announcement on Twitter and LinkedIn yesterday. The post got 15,000 impressions, 250 likes, and 80 retweets"
+
+**Claude creates:**
+- Tool: `submit_docker_amplification`
+- Type: "Social media post"
+- Channels: Twitter, LinkedIn
+- Metrics: 15000 impressions, 250 likes, 80 shares
+
+#### Example 6: Submit Feedback Session
+
+**You say:**
+> "I had a feedback call with Sarah from the Docker team on June 4th about Docker Desktop's new networking features. We discussed UX improvements for about 45 minutes via Zoom"
+
+**Claude creates:**
+- Tool: `submit_docker_feedback`
+- Docker representative: "Sarah"
+- Mode: "Direct call"
+- Time spent: 45 minutes
+
+### GDE Examples
+
+#### Example 1: Submit a Blog Post/Article
+
+**You say:**
+> "I published an article about Cloud Run optimization on Medium yesterday. It's at https://medium.com/@me/cloud-run-optimization and has 3500 views, 180 claps, and 25 comments"
+
+**Claude creates:**
+- Tool: `submit_gde_content`
+- Content type: "Blog post"
+- Google technology: "Cloud Run"
+- Metrics: 3500 views, 180 likes, 25 comments
+
+#### Example 2: Submit a Conference Presentation
+
+**You say:**
+> "I presented at Google I/O Extended 2026 on June 8th. My talk was about 'Building Scalable Apps with Firebase' and was in-person with around 300 attendees. It lasted 50 minutes"
+
+**Claude creates:**
+- Tool: `submit_gde_public_speaking`
+- Event name: "Google I/O Extended 2026"
+- Google technology: "Firebase"
+- Format: "In-person"
+- Duration: 50 minutes
+- Attendees: 300
+
+#### Example 3: Submit a Workshop/Training
+
+**You say:**
+> "I conducted a hands-on workshop on Flutter development last Saturday, June 6th. It was a full-day workshop (8 hours) with 25 developers, and we built 3 complete apps together"
+
+**Claude creates:**
+- Tool: `submit_gde_workshop`
+- Topic: "Flutter development"
+- Duration: "Full day"
+- Attendees: 25
+- Format: "In-person" or "Virtual" (based on context)
+
+#### Example 4: Submit Mentoring Activity
+
+**You say:**
+> "I mentored 5 junior developers this week on Google Cloud architecture best practices. We had 3 sessions totaling about 6 hours"
+
+**Claude creates:**
+- Tool: `submit_gde_mentoring`
+- Topic: "Google Cloud architecture"
+- Number of people: 5
+- Time spent: 6 hours (360 minutes)
+
+#### Example 5: Submit Product Feedback
+
+**You say:**
+> "I provided feedback to the Google Cloud team on June 7th about Cloud Functions cold start performance. I shared detailed metrics and suggestions during a 1-hour call with the product manager"
+
+**Claude creates:**
+- Tool: `submit_gde_product_feedback`
+- Product: "Cloud Functions"
+- Feedback: "Cold start performance improvements"
+- Mode: "Direct call"
+- Time spent: 60 minutes
+
+#### Example 6: Submit Googler Interaction
+
+**You say:**
+> "I collaborated with a Google engineer named Alex on improving the TensorFlow documentation on June 5th. We had a 2-hour video call to review my proposed changes"
+
+**Claude creates:**
+- Tool: `submit_gde_googler_interaction`
+- Googler name: "Alex"
+- Topic: "TensorFlow documentation"
+- Type: "Collaboration"
+- Duration: 2 hours
+
+#### Example 7: Submit a Success Story
+
+**You say:**
+> "One of my mentees just got hired at a major tech company after following my Google Cloud training program. They went from zero cloud experience to GCP certified in 6 months"
+
+**Claude creates:**
+- Tool: `submit_gde_story`
+- Story: Mentee's success with Google Cloud
+- Impact: Career transformation, certification
+- Technology: Google Cloud Platform
+
+### Listing Your Activities
+
+**You say:**
+> "Show me my last 10 Docker Captain activities"
+
+**Claude will:**
+- Use `list_recent_activities` tool
+- Display your recent submissions with titles, dates, and types
+
+### Tips for Better Results
+
+1. **Be specific**: Include dates, numbers, and URLs when available
+2. **Mention the platform**: "on YouTube", "on Medium", "at KubeCon"
+3. **Include metrics**: Views, attendees, duration, impressions
+4. **Specify format**: "in-person", "virtual", "hybrid"
+5. **Natural language**: Just talk normally, Claude will extract the data
+
+### What Happens After Submission
+
+1. ✅ Claude creates the draft via API
+2. 📧 You receive the draft ID
+3. 🌐 You go to the portal:
+   - Docker: https://hub.docker.com/
+   - GDE: https://developers.google.com/community/experts
+4. 📝 Review the draft (verify all data is correct)
+5. ✅ Click "Submit" to publish
+
+**Important:** The API only creates drafts. The final "Submit" must be done manually in the portal.
+
 ## Development
 
 ### Project Structure
