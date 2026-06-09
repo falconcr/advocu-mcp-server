@@ -1,78 +1,181 @@
-"""Pydantic models for GDE activities."""
+"""Pydantic models for GDE activities - based on official API spec."""
 
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import Field
-
-from .base import BaseActivity
+from pydantic import BaseModel, Field
 
 
-class GDEPublicSpeakingActivity(BaseActivity):
-    """Model for GDE public speaking activities."""
+class GDEMetrics(BaseModel):
+    """Metrics object for GDE activities."""
 
-    event_name: str = Field(..., description="Name of the event")
-    location: Optional[str] = Field(None, description="Event location (city, country)")
-    attendees: Optional[int] = Field(None, ge=1, description="Number of attendees")
-    topics: Optional[str] = Field(None, description="Topics covered")
+    readers: Optional[int] = Field(None, ge=1, description="How many people read your content?")
+    # Note: Different activity types may have different metrics fields
 
 
-class GDEContentCreationActivity(BaseActivity):
+class GDEContentCreationActivity(BaseModel):
     """Model for GDE content creation (articles, videos, tutorials)."""
 
-    content_type: str = Field(
-        ...,
-        description="Type of content (article, video, tutorial, documentation, etc.)",
-    )
-    views: Optional[int] = Field(None, ge=0, description="Number of views/reads")
-    engagement: Optional[str] = Field(
+    contentType: Optional[str] = Field(
         None,
-        description="Engagement metrics (likes, comments, shares)",
+        description="Content type - enum with 7 values from API"
     )
+    title: Optional[str] = Field(None, min_length=3, max_length=200, description="What was the title?")
+    description: Optional[str] = Field(None, max_length=2000, description="What was it about?")
+    tags: Optional[List[str]] = Field(None, description="Tags (86 possible values)")
+    metrics: Optional[GDEMetrics] = Field(None, description="Metrics")
+    activityDate: Optional[str] = Field(
+        None,
+        description="Date published (YYYY-MM-DD)",
+        pattern=r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
+    )
+    activityUrl: Optional[str] = Field(
+        None,
+        max_length=500,
+        description="Link to Content",
+        pattern=r"https?:\/\/(www\.)?.*"
+    )
+    additionalInfo: Optional[str] = Field(None, max_length=2000, description="Additional information")
+    private: Optional[bool] = Field(None, description="Do you want to make this activity private?")
 
 
-class GDEWorkshopActivity(BaseActivity):
+class GDEPublicSpeakingActivity(BaseModel):
+    """Model for GDE public speaking activities."""
+
+    title: Optional[str] = Field(None, min_length=3, max_length=200, description="What was the title of your talk?")
+    description: Optional[str] = Field(None, max_length=2000, description="What was it about?")
+    tags: Optional[List[str]] = Field(None, description="Tags")
+    metrics: Optional[dict] = Field(None, description="Metrics")
+    eventFormat: Optional[str] = Field(None, description="Select event format (enum with 3 values)")
+    country: Optional[str] = Field(None, description="Country (enum with 251 values)")
+    inPersonAttendees: Optional[int] = Field(
+        None,
+        ge=0,
+        description="Out of all, how many people attended your session in-person?"
+    )
+    activityDate: Optional[str] = Field(
+        None,
+        description="Date of your talk",
+        pattern=r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
+    )
+    activityUrl: Optional[str] = Field(
+        None,
+        max_length=500,
+        description="Share the event link",
+        pattern=r"https?:\/\/(www\.)?.*"
+    )
+    additionalInfo: Optional[str] = Field(None, max_length=2000, description="Additional information")
+    private: Optional[bool] = Field(None, description="Do you want to make this activity private?")
+
+
+class GDEWorkshopActivity(BaseModel):
     """Model for GDE workshops and training sessions."""
 
-    attendees: Optional[int] = Field(None, ge=1, description="Number of attendees")
-    duration_hours: Optional[float] = Field(None, ge=0, description="Workshop duration in hours")
-    topics: Optional[str] = Field(None, description="Topics covered")
+    title: Optional[str] = Field(None, min_length=3, max_length=200, description="What was the name of your workshop session?")
+    description: Optional[str] = Field(None, max_length=2000, description="What was it about?")
+    tags: Optional[List[str]] = Field(None, description="Tags")
+    metrics: Optional[dict] = Field(None, description="Metrics")
+    eventFormat: Optional[str] = Field(None, description="Select event format (enum with 3 values)")
+    country: Optional[str] = Field(None, description="Country (enum with 251 values)")
+    inPersonAttendees: Optional[int] = Field(
+        None,
+        ge=0,
+        description="Out of all, how many people attended your session in-person?"
+    )
+    activityDate: Optional[str] = Field(
+        None,
+        description="Date of your workshop",
+        pattern=r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
+    )
+    activityUrl: Optional[str] = Field(
+        None,
+        max_length=500,
+        description="Share the event link",
+        pattern=r"https?:\/\/(www\.)?.*"
+    )
+    additionalInfo: Optional[str] = Field(None, max_length=2000, description="Additional information")
+    private: Optional[bool] = Field(None, description="Do you want to make this activity private?")
 
 
-class GDEMentoringActivity(BaseActivity):
+class GDEMentoringActivity(BaseModel):
     """Model for GDE mentoring activities."""
 
-    mentees: Optional[int] = Field(None, ge=1, description="Number of mentees")
-    duration_hours: Optional[float] = Field(None, ge=0, description="Total mentoring hours")
-    topics: Optional[str] = Field(None, description="Topics covered in mentoring")
+    title: Optional[str] = Field(None, min_length=3, max_length=200, description="What was the name of your mentoring session?")
+    description: Optional[str] = Field(None, max_length=2000, description="What was it about?")
+    tags: Optional[List[str]] = Field(None, description="Tags")
+    metrics: Optional[dict] = Field(None, description="Metrics")
+    eventFormat: Optional[str] = Field(None, description="Select event format (enum with 3 values)")
+    country: Optional[str] = Field(None, description="Country (enum with 251 values)")
+    inPersonAttendees: Optional[int] = Field(
+        None,
+        ge=0,
+        description="Out of all, how many people attended your session in-person?"
+    )
+    activityDate: Optional[str] = Field(
+        None,
+        description="Date of your mentoring session",
+        pattern=r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
+    )
+    activityUrl: Optional[str] = Field(
+        None,
+        max_length=500,
+        description="Share the event link",
+        pattern=r"https?:\/\/(www\.)?.*"
+    )
+    additionalInfo: Optional[str] = Field(None, max_length=2000, description="Additional information")
+    private: Optional[bool] = Field(None, description="Do you want to make this activity private?")
 
 
-class GDEProductFeedbackActivity(BaseActivity):
+class GDEProductFeedbackActivity(BaseModel):
     """Model for GDE product feedback."""
 
-    product_name: str = Field(..., description="Google product name")
-    feedback_type: Optional[str] = Field(
+    title: Optional[str] = Field(None, min_length=3, max_length=200, description="Title")
+    description: Optional[str] = Field(None, max_length=2000, description="Description")
+    contentType: Optional[str] = Field(None, description="Content type (enum with 2 values)")
+    productDescription: Optional[str] = Field(None, max_length=500, description="What product was it about?")
+    tags: Optional[List[str]] = Field(None, description="Tags")
+    metrics: Optional[dict] = Field(None, description="Metrics")
+    activityDate: Optional[str] = Field(
         None,
-        description="Type of feedback (bug report, feature request, usability, etc.)",
+        description="Participation Date",
+        pattern=r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
     )
-    impact: Optional[str] = Field(None, description="Potential impact of the feedback")
+    additionalInfo: Optional[str] = Field(None, max_length=2000, description="Additional information")
+    private: Optional[bool] = Field(None, description="Do you want to make this activity private?")
 
 
-class GDEInteractionActivity(BaseActivity):
+class GDEInteractionActivity(BaseModel):
     """Model for GDE interactions with Googlers."""
 
-    googler_team: Optional[str] = Field(None, description="Google team involved")
-    interaction_type: Optional[str] = Field(
+    title: Optional[str] = Field(None, min_length=3, max_length=200, description="Title")
+    description: Optional[str] = Field(None, max_length=2000, description="Description")
+    format: Optional[str] = Field(None, description="Format (enum with 8 values)")
+    interactionType: Optional[str] = Field(None, description="Interaction Type (enum with 6 values)")
+    tags: Optional[List[str]] = Field(None, description="Tags")
+    metrics: Optional[dict] = Field(None, description="Metrics")
+    activityDate: Optional[str] = Field(
         None,
-        description="Type of interaction (meeting, email, collaboration, etc.)",
+        description="Interaction Date",
+        pattern=r"[0-9]{4}-[0-9]{2}-[0-9]{2}"
     )
-    topics: Optional[str] = Field(None, description="Topics discussed")
+    additionalInfo: Optional[str] = Field(None, max_length=2000, description="Additional information")
+    additionalLinks: Optional[str] = Field(None, max_length=2000, description="Additional links")
+    private: Optional[bool] = Field(None, description="Do you want to make this activity private?")
 
 
-class GDEStoryActivity(BaseActivity):
+class GDEStoryActivity(BaseModel):
     """Model for GDE success stories."""
 
-    story_type: Optional[str] = Field(
+    title: Optional[str] = Field(None, min_length=3, max_length=200, description="Title of the story")
+    description: Optional[str] = Field(None, max_length=2000, description="Description")
+    whyIsSignificant: Optional[str] = Field(None, max_length=2000, description="Tell us more about it and why it is significant")
+    significanceType: Optional[str] = Field(None, description="Significance type (enum with 6 values)")
+    activityUrl: Optional[str] = Field(
         None,
-        description="Type of story (case study, testimonial, impact story, etc.)",
+        max_length=500,
+        description="Link",
+        pattern=r"https?:\/\/(www\.)?.*"
     )
-    impact: Optional[str] = Field(None, description="Impact of the story")
+    tags: Optional[List[str]] = Field(None, description="Tags")
+    metrics: Optional[dict] = Field(None, description="Metrics")
+    additionalInfo: Optional[str] = Field(None, max_length=2000, description="Additional information")
+    private: Optional[bool] = Field(None, description="Do you want to make this activity private?")

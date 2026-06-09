@@ -103,8 +103,13 @@ class AdvocuClient:
                 error_msg = f"API request failed with status {response.status_code}"
                 try:
                     error_data = response.json()
+                    logger.error(f"API Error Response: {error_data}")
+                    logger.error(f"Request data was: {data}")
                     if "message" in error_data:
                         error_msg += f": {error_data['message']}"
+                    # Include full error response for debugging
+                    if isinstance(error_data, dict):
+                        error_msg += f" | Full error: {error_data}"
                 except Exception:
                     error_msg += f": {response.text}"
                 raise AdvocuAPIError(error_msg)

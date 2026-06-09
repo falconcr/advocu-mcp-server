@@ -276,35 +276,48 @@ def submit_gde_public_speaking(
 
     Args:
         title: Title of your presentation
-        date: Date of the event (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ)
-        event_name: Name of the event/conference
+        date: Date of the event (ISO format: YYYY-MM-DD)
+        event_name: Name of the event/conference (will be added to description)
         description: Detailed description of the talk
         url: URL to slides, recording, or event page
-        location: Location of the event
-        attendees: Approximate number of attendees
-        topics: Google technologies covered (e.g., "Firebase, Cloud Run")
+        location: Location of the event (will be mapped to country field)
+        attendees: Approximate number of attendees (in-person)
+        topics: Google technologies covered (will be added to description)
 
     Returns:
         Created activity draft information
     """
-    from .models import GDEPublicSpeakingActivity
+    from .models.gde import GDEPublicSpeakingActivity
 
     try:
+        # Build description with event name and topics
+        full_description = description or ""
+        if event_name:
+            full_description = f"Event: {event_name}. {full_description}".strip()
+        if topics:
+            full_description = f"{full_description} Topics: {topics}".strip()
+
+        # Create activity with correct field names
         activity = GDEPublicSpeakingActivity(
             title=title,
-            date=date,
-            event_name=event_name,
-            description=description or None,
-            url=url or None,
-            location=location or None,
-            attendees=attendees if attendees > 0 else None,
-            topics=topics or None,
+            description=full_description or None,
+            activityDate=date,
+            activityUrl=url or None,
+            inPersonAttendees=attendees if attendees > 0 else None,
+            country=location or None,  # Map location to country
+            eventFormat=None,  # Could be added as parameter
+            tags=None,
+            metrics=None,
+            additionalInfo=None,
+            private=False,
         )
+
+        payload = activity.model_dump(exclude_none=True)
 
         with AdvocuClient(ProgramType.GDE) as client:
             result = client.create_activity_draft(
                 "public-speaking",
-                activity.model_dump(exclude_none=True),
+                payload,
             )
 
         return {
@@ -344,29 +357,68 @@ def submit_gde_content(
         content_type: Type (article, video, tutorial, documentation)
         description: Content description
         url: URL to the content
-        views: Number of views/reads
-        engagement: Engagement metrics (likes, comments, shares)
+        views: Number of views/reads (stored as "readers" in API)
+        engagement: Engagement metrics (not currently used by API)
 
     Returns:
         Created activity draft information
     """
-    from .models import GDEContentCreationActivity
+    from .models.gde import GDEContentCreationActivity, GDEMetrics
 
     try:
+        # Map common content type values to valid enum values
+        # Valid values: Articles, Books, Code contribution, Demos, Newsletters, Podcasts, Videos
+        content_type_mapping = {
+            "video": "Videos",
+            "videos": "Videos",
+            "youtube": "Videos",
+            "article": "Articles",
+            "articles": "Articles",
+            "blog": "Articles",
+            "blog post": "Articles",
+            "book": "Books",
+            "books": "Books",
+            "code": "Code contribution",
+            "code contribution": "Code contribution",
+            "demo": "Demos",
+            "demos": "Demos",
+            "newsletter": "Newsletters",
+            "newsletters": "Newsletters",
+            "podcast": "Podcasts",
+            "podcasts": "Podcasts",
+        }
+
+        # Normalize and map content type
+        mapped_type = None
+        if content_type:
+            normalized = content_type.lower().strip()
+            mapped_type = content_type_mapping.get(normalized, content_type)
+
+        # Build metrics object if views provided
+        metrics = None
+        if views > 0:
+            metrics = GDEMetrics(readers=views)
+
+        # Create activity with correct field names
         activity = GDEContentCreationActivity(
             title=title,
-            date=date,
-            content_type=content_type,
             description=description or None,
-            url=url or None,
-            views=views if views > 0 else None,
-            engagement=engagement or None,
+            contentType=mapped_type,
+            activityDate=date,
+            activityUrl=url or None,
+            metrics=metrics,
+            tags=None,  # Could be added as a parameter later
+            additionalInfo=None,
+            private=False,
         )
+
+        # Convert to dict, excluding None values
+        payload = activity.model_dump(exclude_none=True)
 
         with AdvocuClient(ProgramType.GDE) as client:
             result = client.create_activity_draft(
                 "content-creation",
-                activity.model_dump(exclude_none=True),
+                payload,
             )
 
         return {
@@ -402,33 +454,44 @@ def submit_gde_workshop(
 
     Args:
         title: Workshop title
-        date: Workshop date (ISO format)
+        date: Workshop date (ISO format: YYYY-MM-DD)
         description: Workshop description
         url: URL to materials
-        attendees: Number of participants
-        duration_hours: Duration in hours
-        topics: Google technologies covered
+        attendees: Number of participants (in-person)
+        duration_hours: Duration in hours (not stored separately by API)
+        topics: Google technologies covered (added to description)
 
     Returns:
         Created activity draft information
     """
-    from .models import GDEWorkshopActivity
+    from .models.gde import GDEWorkshopActivity
 
     try:
+        # Add topics to description
+        full_description = description or ""
+        if topics:
+            full_description = f"{full_description} Topics: {topics}".strip()
+
         activity = GDEWorkshopActivity(
             title=title,
-            date=date,
-            description=description or None,
-            url=url or None,
-            attendees=attendees if attendees > 0 else None,
-            duration_hours=duration_hours if duration_hours > 0 else None,
-            topics=topics or None,
+            description=full_description or None,
+            activityDate=date,
+            activityUrl=url or None,
+            inPersonAttendees=attendees if attendees > 0 else None,
+            eventFormat=None,
+            country=None,
+            tags=None,
+            metrics=None,
+            additionalInfo=None,
+            private=False,
         )
+
+        payload = activity.model_dump(exclude_none=True)
 
         with AdvocuClient(ProgramType.GDE) as client:
             result = client.create_activity_draft(
                 "workshop",
-                activity.model_dump(exclude_none=True),
+                payload,
             )
 
         return {
@@ -474,23 +537,34 @@ def submit_gde_mentoring(
     Returns:
         Created activity draft information
     """
-    from .models import GDEMentoringActivity
+    from .models.gde import GDEMentoringActivity
 
     try:
+        # Add topics to description
+        full_description = description or ""
+        if topics:
+            full_description = f"{full_description} Topics: {topics}".strip()
+
         activity = GDEMentoringActivity(
             title=title,
-            date=date,
-            description=description or None,
-            url=url or None,
-            mentees=mentees if mentees > 0 else None,
-            duration_hours=duration_hours if duration_hours > 0 else None,
-            topics=topics or None,
+            description=full_description or None,
+            activityDate=date,
+            activityUrl=url or None,
+            inPersonAttendees=mentees if mentees > 0 else None,
+            eventFormat=None,
+            country=None,
+            tags=None,
+            metrics=None,
+            additionalInfo=None,
+            private=False,
         )
+
+        payload = activity.model_dump(exclude_none=True)
 
         with AdvocuClient(ProgramType.GDE) as client:
             result = client.create_activity_draft(
                 "mentoring",
-                activity.model_dump(exclude_none=True),
+                payload,
             )
 
         return {
@@ -536,23 +610,27 @@ def submit_gde_product_feedback(
     Returns:
         Created activity draft information
     """
-    from .models import GDEProductFeedbackActivity
+    from .models.gde import GDEProductFeedbackActivity
 
     try:
         activity = GDEProductFeedbackActivity(
             title=title,
-            date=date,
-            product_name=product_name,
             description=description or None,
-            url=url or None,
-            feedback_type=feedback_type or None,
-            impact=impact or None,
+            contentType=feedback_type or None,
+            productDescription=product_name or None,
+            activityDate=date,
+            tags=None,
+            metrics=None,
+            additionalInfo=None,
+            private=False,
         )
+
+        payload = activity.model_dump(exclude_none=True)
 
         with AdvocuClient(ProgramType.GDE) as client:
             result = client.create_activity_draft(
                 "product-feedback-given",
-                activity.model_dump(exclude_none=True),
+                payload,
             )
 
         return {
@@ -598,23 +676,33 @@ def submit_gde_googler_interaction(
     Returns:
         Created activity draft information
     """
-    from .models import GDEInteractionActivity
+    from .models.gde import GDEInteractionActivity
 
     try:
+        # Add topics to description
+        full_description = description or ""
+        if topics:
+            full_description = f"{full_description} Topics: {topics}".strip()
+
         activity = GDEInteractionActivity(
             title=title,
-            date=date,
-            description=description or None,
-            url=url or None,
-            googler_team=googler_team or None,
-            interaction_type=interaction_type or None,
-            topics=topics or None,
+            description=full_description or None,
+            format=None,
+            interactionType=interaction_type or None,
+            activityDate=date,
+            additionalInfo=googler_team or None,
+            additionalLinks=url or None,
+            tags=None,
+            metrics=None,
+            private=False,
         )
+
+        payload = activity.model_dump(exclude_none=True)
 
         with AdvocuClient(ProgramType.GDE) as client:
             result = client.create_activity_draft(
                 "interaction-with-googlers",
-                activity.model_dump(exclude_none=True),
+                payload,
             )
 
         return {
@@ -658,22 +746,27 @@ def submit_gde_story(
     Returns:
         Created activity draft information
     """
-    from .models import GDEStoryActivity
+    from .models.gde import GDEStoryActivity
 
     try:
         activity = GDEStoryActivity(
             title=title,
-            date=date,
             description=description or None,
-            url=url or None,
-            story_type=story_type or None,
-            impact=impact or None,
+            whyIsSignificant=impact or None,
+            significanceType=story_type or None,
+            activityUrl=url or None,
+            tags=None,
+            metrics=None,
+            additionalInfo=None,
+            private=False,
         )
+
+        payload = activity.model_dump(exclude_none=True)
 
         with AdvocuClient(ProgramType.GDE) as client:
             result = client.create_activity_draft(
                 "stories",
-                activity.model_dump(exclude_none=True),
+                payload,
             )
 
         return {
